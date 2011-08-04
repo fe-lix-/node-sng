@@ -96,8 +96,6 @@ sngjs.error_log = sngjs.tmpdir + '/error.log'
 
 logme 'NGinx temporary directory is ' + emphasize(sngjs.tmpdir) 
 
-console.log sngjs
-
 sngjs.nginx_conf = """
 error_log   #{ sngjs.tmpdir }/error.log;
 pid #{ sngjs.tmpdir}/pid;
