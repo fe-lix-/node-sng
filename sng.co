@@ -29,22 +29,27 @@ child_process = require 'child_process'
 console = require 'console'
 util = require 'util'
 http = require 'http'
+optimist = require 'optimist'
 
-
-argv = require('optimist')
-    .usage 'start.py [basedir]'
+argv = optimist
+    .usage 'sng [basedir]'
     .default do
         n: '127.0.0.1:8000', 
         p: '127.0.0.1:9000'
     .alias do
         n: 'nginx-base', 
-        p: 'php-bind'
+        p: 'php-bind',
+        h: 'help',
     .describe do
         n: 'Default binding NGinx wil be listening on',
         p: 'Default binding address for php-cgi'
     .argv
 
 
+if optimist.argv.h
+    optimist.showHelp()
+    process.exit()
+   
 
 sngjs =
     prefix_dir: 'nginx-'
@@ -54,10 +59,10 @@ sngjs =
     fresh: true
 
 
-if argv._.length > 0 
-    sngjs.base = argv._[0]
+if optimist.argv._.length > 0 
+    sngjs.base = path.join process.cwd(), optimist.argv._[0]
 else
-    sngjs.base = path.resolve()
+    sngjs.base = process.cwd()
 
 
 colors =
@@ -91,6 +96,7 @@ sngjs.error_log = sngjs.tmpdir + '/error.log'
 
 logme 'NGinx temporary directory is ' + emphasize(sngjs.tmpdir) 
 
+console.log sngjs
 
 sngjs.nginx_conf = """
 error_log   #{ sngjs.tmpdir }/error.log;
@@ -262,7 +268,8 @@ print_accesslog = (data) ->
 killed = ->
     sngjs.kill += 1
     if sngjs.kill >= 2
-        process.exit()
+        child_process.exec 'rm -r ' + sngjs.tmpdir, -> 
+            process.exit()
 
 
 logme 'Starting PHP CGI on ' + emphasize(sngjs.php_bind)
