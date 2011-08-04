@@ -1,0 +1,3 @@
+0.0.5 : 4 august 2011
+- Adding support of removing the temporary dir
+- Adding the -h to show help

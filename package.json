@@ -1,12 +1,13 @@
 {
     "name": "sng",
-    "version": "0.0.5",
-    "description": "Just a small script to launch a NGinx/PHP server for testing purpose",
-    "keywords": "nginx php server",
+    "version": "0.0.6",
+    "description": "THE script that manages NGinx/PHP developement server",
+    "keywords": "nginx php developement server fun",
     "bin": {
         "sng": "./sng.js"
     },
     "dependencies": {
-        "optimist": ">=0.2.5"
+        "optimist": ">=0.2.5",
+        "jinjs": ">=0.2.0"
     }
 }
