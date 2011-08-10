@@ -1,0 +1,39 @@
+`#!/usr/bin/env node`
+
+optimist = require 'optimist'
+
+sng = require '../lib/sng'
+
+argv = optimist
+    .usage 'sng [basedir]'
+    .default do
+        n: '127.0.0.1:8000', 
+        p: '127.0.0.1:9000'
+    .alias do
+        n: 'nginx-base', 
+        p: 'php-bind',
+        h: 'help',
+    .describe do
+        n: 'Default binding NGinx wil be listening on',
+        p: 'Default binding address for php-cgi'
+    .argv
+
+
+if optimist.argv.h
+    optimist.showHelp()
+    process.exit()
+   
+
+if optimist.argv._.length > 0
+    sng.base path.join process.cwd(), optimist.argv._[0]
+else
+    sng.base process.cwd()
+
+sng.bind argv.p, argv.n
+sng.start()
+
+process.stdin.resume()
+
+process.on 'SIGINT', ->
+    console.log 'Interrupted'
+    sng.stop()

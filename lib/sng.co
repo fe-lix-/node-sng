@@ -1,0 +1,115 @@
+{exec, spawn} = require 'child_process'
+jinjs = require 'jinjs'
+path = require 'path'
+fs = require 'fs'
+
+jinjs.registerExtension '.tpl'
+
+nginx_conf = require '../templates/nginx.conf'
+stdio = require './stdio'
+
+_vars =
+    prefix_dir: 'nginx-'
+    php_bind: '127.0.0.1:9000'
+    nginx_bind: '127.0.01:8000'
+    kill: 0
+    fresh: true
+
+_processes = {}
+_stop_callback = false
+
+bind = (php_bind, nginx_bind) ->
+    _vars.php_bind = php_bind
+    _vars.nginx_bind = nginx_bind
+
+killed = ->
+    _vars.kill += 1
+    if _vars.kill >= 3
+        exec 'rm -r ' + _vars.tmpdir, ->
+            if _stop_callback
+                res =
+                    vars : _vars
+                    processes : _processes
+                _stop_callback null, res
+                return
+            else
+                process.exit()
+
+start = (callback)  ->
+
+    callback ?= false
+
+    (err, stdout, stderr) <- exec 'mktemp -d /tmp/' + _vars.prefix_dir + 'XXXXXXX'
+
+    if (err !== null) 
+        console.log 'exec error:' + err
+        process.exit() 
+
+    _vars.tmpdir = stdout.substr 0, stdout.length - 1
+    _vars.access_log = _vars.tmpdir + '/access.log'
+    _vars.error_log = _vars.tmpdir + '/error.log'
+
+    if not callback
+        stdio.logme 'NGinx temporary directory is ' + stdio.emphasize(_vars.tmpdir) 
+
+    _vars.nginx_conf = nginx_conf.render _vars
+
+    _vars.conffilename =  path.join _vars.tmpdir,'nginx.conf'
+    fs.writeFileSync _vars.conffilename, _vars.nginx_conf
+    fs.writeFileSync _vars.access_log, ''
+    fs.writeFileSync _vars.error_log, ''
+
+    if not callback
+        stdio.logme 'Starting PHP CGI on ' + stdio.emphasize(_vars.php_bind)
+
+    _processes.php = spawn 'php-cgi', ['-b',_vars.php_bind,'-q']
+    _processes.php.on 'exit', killed
+    if not callback
+        _processes.php.stdout.on 'data', stdio.print_stdout
+        _processes.php.stderr.on 'data', stdio.print_stderr
+
+    if not callback
+        stdio.logme "Starting NGinx CGI on " + stdio.emphasize _vars.nginx_bind
+
+    _processes.nginx = spawn 'nginx', ['-c',_vars.conffilename]
+    _processes.nginx.on 'exit', killed
+    if not callback
+        _processes.nginx.stdout.on 'data', stdio.print_stdout
+        _processes.nginx.stderr.on 'data', stdio.print_stderr
+
+    _processes.tail = spawn 'tail', ['-f',_vars.access_log]
+    _processes.tail.on 'exit', killed
+    if not callback
+        _processes.tail.stdout.on 'data', stdio.print_accesslog
+
+    _processes.err = spawn 'tail', ['-f', _vars.error_log]
+    _processes.err.on 'exit', killed
+    if not callback
+        _processes.err.stdout.on 'data', stdio.print_stderr
+
+
+
+    if callback
+        process.nextTick ->
+            res =
+                vars: _vars
+                processes: _processes
+            callback null, res
+        return
+
+
+stop = (callback) ->
+    callback ?= false
+    _stop_callback :=callback
+    _processes.tail.kill 'SIGINT'
+    _processes.nginx.kill 'SIGINT'
+    _processes.php.kill 'SIGINT'
+    _processes.err.kill 'SIGINT'
+
+base = (base) ->
+    _vars.base = base
+
+exports.base = base
+exports.bind = bind
+exports.start = start
+exports.stop = stop

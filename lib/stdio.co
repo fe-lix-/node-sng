@@ -1,0 +1,57 @@
+sys = require 'sys'
+
+colors =
+    chead: '\033[96;1m'
+    cblue: '\033[94;1m'
+    cgreen: '\033[92;1m'
+    cred: '\033[91;1m'
+    cyellow: '\033[93;1m'
+    cfail: '\033[91m'
+    cend: '\033[0m'
+
+fresh = true
+
+logme = (data, arrow=true) ->
+    if arrow
+        console.log '  ' + colors.cgreen + '==>' + colors.cend + ' '+ data
+    else
+        console.log '   ' + data
+
+emphasize = (data) ->
+    return colors.chead + data + colors.cend
+
+print_stdout = (data) ->
+    sys.print data.toString()    
+
+print_stderr = (data) ->
+    str = data.toString()
+    if fresh
+        fresh := false
+    else
+        sys.print colors.cred + data.toString() + colors.cend
+
+print_accesslog = (data) -> 
+    mdata = data.toString()
+    line = mdata.split '||' 
+    request = line[0].split ' '
+    mode = request[0]
+    url = request[1]
+    proto = request[2]
+    status =  line[1]
+    length = line[2]
+    time = line[3]
+    fro = line[4]
+    bytes_sent = parseInt(line[5]) / 1024
+
+    if parseInt(status) >= 400 
+        status = colors.cred + status + colors.cend
+    else 
+        status = colors.cgreen + status + colors.cend
+    
+    console.log colors.cblue + mode + colors.cend + ' ' + colors.cyellow + url + colors.cend + ' ' + status + ' (' + colors.chead + fro + colors.cend + ') ' + colors.cblue + bytes_sent + colors.cend + 'Kb, ' + colors.cblue + time + colors.cend + 's'
+
+exports.logme = logme
+exports.emphasize = emphasize
+exports.print_stdout = print_stdout
+exports.print_stderr = print_stderr
+exports.print_accesslog = print_accesslog

@@ -1,6 +1,6 @@
 {
     "name": "sng",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "description": "THE script that manages NGinx/PHP developement server",
     "keywords": ["nginx", "php", "developement server", "fun"],
     "homepage" : "http://code.ravelsoft.com/node-sng",
@@ -12,7 +12,7 @@
         "url": "https://bitbucket.org/ravelsoft/node-sng"
     },
     "bin": {
-        "sng": "./sng.js"
+        "sng": "bin/cli.js"
     },
     "engines" : {"node" : ">=0.4.0"},
     "dependencies": {
@@ -20,7 +20,8 @@
         "jinjs": ">=0.2.0"
     },
     "devDependencies" : {
-        "coco": "0.5.4"
+        "coco": "0.5.4",
+        "vows": ">=0.5.9"
     },
     "author" : {
         "name" : "Félix Delval",
