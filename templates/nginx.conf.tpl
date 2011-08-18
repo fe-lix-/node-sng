@@ -1,6 +1,7 @@
 error_log   {{ tmpdir }}/error.log;
 pid {{ tmpdir }}/pid;
 daemon off;
+master_process off;
 
 events {
     worker_connections  4096;

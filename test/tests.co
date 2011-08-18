@@ -57,7 +57,7 @@ suite.addBatch do
             assert.isTrue res.processes.tail.killed
         'tail error.log is not running' : (err, res) ->
             assert.isTrue res.processes.tail.killed
-.run()
+.export(module)
 
                 
              
