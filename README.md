@@ -12,12 +12,14 @@ To give the possibility to a user without admin privileges to easily launch a PH
  * Nginx server
  
 On Ubuntu systems:
+
     sudo apt-get install nginx-full php5-cgi 
 
 ## Install
     npm install sng
     
 To install globally in system use:
+
     npm install sng -g
 
 ## Usage
