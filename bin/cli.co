@@ -8,27 +8,35 @@ argv = optimist
     .usage 'sng [basedir]'
     .default do
         n: '127.0.0.1:8000', 
-        p: '127.0.0.1:9000'
+        p: '127.0.0.1:9000',
+        b: 'standard'
     .alias do
         n: 'nginx-base', 
         p: 'php-bind',
+        b: 'behavior',
         h: 'help',
     .describe do
         n: 'Default binding NGinx wil be listening on',
-        p: 'Default binding address for php-cgi'
+        p: 'Default binding address for php-cgi',
+        b: 'Changes behavior. Avialable are: "standard", "zend"'
     .argv
 
 
 if optimist.argv.h
     optimist.showHelp()
     process.exit()
-   
+    return
 
 if optimist.argv._.length > 0
     sng.base path.join process.cwd(), optimist.argv._[0]
 else
     sng.base process.cwd()
 
+behavior_set = sng.behavior argv.b
+if not behavior_set
+    optimist.showHelp()
+    process.exit()
+    return
 sng.bind argv.p, argv.n
 sng.start()
 

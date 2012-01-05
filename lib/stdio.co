@@ -1,4 +1,4 @@
-sys = require 'sys'
+util = require 'util'
 
 colors =
     chead: '\033[96;1m'
@@ -16,19 +16,22 @@ logme = (data, arrow=true) ->
         console.log '  ' + colors.cgreen + '==>' + colors.cend + ' '+ data
     else
         console.log '   ' + data
+        
+error = (data) ->
+    console.log colors.cfail + data.toString() + colors.cend
 
 emphasize = (data) ->
     return colors.chead + data + colors.cend
 
 print_stdout = (data) ->
-    sys.print data.toString()    
+    util.print data.toString()    
 
 print_stderr = (data) ->
     str = data.toString()
     if fresh
         fresh := false
     else
-        sys.print colors.cred + data.toString() + colors.cend
+        util.print colors.cred + data.toString() + colors.cend
 
 print_accesslog = (data) -> 
     mdata = data.toString()
@@ -51,6 +54,7 @@ print_accesslog = (data) ->
     console.log colors.cblue + mode + colors.cend + ' ' + colors.cyellow + url + colors.cend + ' ' + status + ' (' + colors.chead + fro + colors.cend + ') ' + colors.cblue + bytes_sent + colors.cend + 'Kb, ' + colors.cblue + time + colors.cend + 's'
 
 exports.logme = logme
+exports.error = error
 exports.emphasize = emphasize
 exports.print_stdout = print_stdout
 exports.print_stderr = print_stderr

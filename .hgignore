@@ -1,3 +1,10 @@
 syntax: glob
 
 *.js
+.project
+.pydevproject
+
+syntax: regexp
+^node_modules$
+^\.externalToolBuilders$
+^\.settings$

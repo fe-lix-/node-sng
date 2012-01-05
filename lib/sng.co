@@ -14,6 +14,8 @@ _vars =
     nginx_bind: '127.0.01:8000'
     kill: 0
     fresh: true
+    behavior: 'standard'
+    behavior_file: ''
 
 _processes = {}
 _stop_callback = false
@@ -21,6 +23,20 @@ _stop_callback = false
 bind = (php_bind, nginx_bind) ->
     _vars.php_bind = php_bind
     _vars.nginx_bind = nginx_bind
+    
+behavior = (profile) ->
+    posible = ['zend', 'standard']
+    found = false 
+    for next of posible
+        if next is profile
+            found = true 
+    if not found
+        stdio.error 'Invalid behavior selected: ' + profile
+        return false
+    stdio.logme 'behavior: ' + stdio.emphasize(profile)
+    _vars.behavior = profile
+    _vars.behavior_file = require '../templates/behaviors/' + profile + '.conf'
+    true 
 
 killed = ->
     _vars.kill += 1
@@ -52,6 +68,7 @@ start = (callback)  ->
     if not callback
         stdio.logme 'NGinx temporary directory is ' + stdio.emphasize(_vars.tmpdir) 
 
+    _vars.behavior_file = _vars.behavior_file.render _vars
     _vars.nginx_conf = nginx_conf.render _vars
 
     _vars.conffilename =  path.join _vars.tmpdir,'nginx.conf'
@@ -101,10 +118,10 @@ start = (callback)  ->
 stop = (callback) ->
     callback ?= false
     _stop_callback :=callback
-    _processes.tail.kill 'SIGINT'
-    _processes.nginx.kill 'SIGINT'
-    _processes.php.kill 'SIGINT'
-    _processes.err.kill 'SIGINT'
+    _processes.tail.kill 'SIGINT' unless _processes.tail is undefined
+    _processes.nginx.kill 'SIGINT' unless _processes.nginx is undefined
+    _processes.php.kill 'SIGINT' unless _processes.php is undefined
+    _processes.err.kill 'SIGINT' unless _processes.err is undefined
 
 base = (base) ->
     _vars.base = base
@@ -113,3 +130,4 @@ exports.base = base
 exports.bind = bind
 exports.start = start
 exports.stop = stop
+exports.behavior = behavior

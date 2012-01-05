@@ -26,7 +26,7 @@ http {
     fastcgi_param  SERVER_NAME        $server_name;
 
     client_body_temp_path {{ tmpdir }}/client_body_temp;
-    proxy_temp_path {{ tmpdir }}/proxy_t'emp;
+    proxy_temp_path {{ tmpdir }}/proxy_temp;
     fastcgi_temp_path {{ tmpdir }}/fastcgi_temp;
     uwsgi_temp_path {{ tmpdir }}/uwsgi_temp;
     scgi_temp_path {{ tmpdir }}/scgi_temp;
@@ -43,13 +43,7 @@ http {
         index       index.php index.html index.html;
         root        {{ base }};
 
-        location / {
-
-            if ($uri ~ "\.php") {
-                fastcgi_pass {{ php_bind }};
-            }
-            access_log  {{ tmpdir }}/access.log mine;
-        }
+{{ behavior_file }}
     }
 
     types {
