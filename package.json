@@ -14,14 +14,13 @@
     "bin": {
         "sng": "bin/cli.js"
     },
-    "engines" : {"node" : ">=0.4.0"},
     "dependencies": {
-        "optimist": ">=0.2.5",
-        "jinjs": ">=0.2.0"
+        "optimist": "latest",
+        "jinjs": "latest"
     },
     "devDependencies" : {
-        "coco": "0.5.4",
-        "vows": ">=0.5.9"
+        "coco": "latest",
+        "vows": "latest"
     },
     "author" : {
         "name" : "Félix Delval",
