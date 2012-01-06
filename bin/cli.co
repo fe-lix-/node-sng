@@ -1,5 +1,6 @@
 `#!/usr/bin/env node`
 
+path = require 'path'
 optimist = require 'optimist'
 
 sng = require '../lib/sng'
