@@ -44,7 +44,7 @@ http {
         index       index.php index.html index.html;
         root        {{ base }};
 
-{{ behavior_file }}
+        {{ behavior_file|indent(8) }}
     }
 
     types {
