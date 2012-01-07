@@ -1,4 +1,6 @@
 util = require 'util'
+fs = require 'fs'
+std = require './std'
 
 colors =
     chead: '\033[96;1m'
@@ -26,12 +28,30 @@ emphasize = (data) ->
 print_stdout = (data) ->
     util.print data.toString()    
 
+print_ngnix_conf = (file, lineno, context) ->
+    context ?= 7
+    conf = fs.readFileSync file, 'UTF-8'
+    i = 1
+    for line of conf.split "\n"
+        if i >= lineno - context and i <= lineno + context
+            if i is lineno
+                error colors.cred + '--> ' + std.lpad(i + ':', 4) + line
+            else
+                error std.lpad(i + ':', 8) + line
+        i += 1
+
 print_stderr = (data) ->
     str = data.toString()
-    if fresh
+    ngnix_err = /in (\/tmp\/nginx-.{7}\/nginx.conf):(\d+)/m
+    if fresh and not ngnix_err.test(str)
         fresh := false
     else
-        util.print colors.cred + data.toString() + colors.cend
+        util.print colors.cred + str + colors.cend
+    
+    match = ngnix_err.exec(str)
+    if match is not null
+        print_ngnix_conf match[1], parseInt match[2]
+        
 
 print_accesslog = (data) -> 
     mdata = data.toString()

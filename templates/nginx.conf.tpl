@@ -9,7 +9,7 @@ events {
 
 http {
     fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
-    fastcgi_param  SERVER_SOFTWARE    nginx;
+    fastcgi_param  SERVER_SOFTWARE    {{ meta.name }}/{{ meta.version }};
     fastcgi_param  QUERY_STRING       $query_string;
     fastcgi_param  REQUEST_METHOD     $request_method;
     fastcgi_param  CONTENT_TYPE       $content_type;
@@ -45,6 +45,13 @@ http {
         root        {{ base }};
 
         {{ behavior_file|indent(8) }}
+        
+        {% if extraDirectives %}
+        
+        {{ extraDirectives|indent(8) }}
+        
+        {% endif %}
+    
     }
 
     types {

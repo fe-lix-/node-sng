@@ -23,10 +23,9 @@ To install globally in system use:
     npm install sng -g
 
 ## Usage
-    sng [basedir]
-
     Options:
-      -n, --nginx-base  Default binding NGinx wil be listening on            [default: "127.0.0.1:8000"]
-      -p, --php-bind    Default binding address for php-cgi                  [default: "127.0.0.1:9000"]
-      -b, --behavior    Changes behavior. Avialable are: "standard", "zend"  [default: "standard"]
+      -n, --nginx-base        Default binding NGinx wil be listening on            [default: "127.0.0.1:8000"]
+      -p, --php-bind          Default binding address for php-cgi                  [default: "127.0.0.1:9000"]
+      -b, --behavior          Changes behavior. Avialable are: "standard", "zend"  [default: "standard"]
+      -x, --extra-directives  Extra directives file for the NGinx server 
 

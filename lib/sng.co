@@ -2,23 +2,32 @@
 jinjs = require 'jinjs'
 path = require 'path'
 fs = require 'fs'
+std = require './std'
 
 jinjs.registerExtension '.tpl'
 
 nginx_conf = require '../templates/nginx.conf'
 stdio = require './stdio'
 
+defaults = 
+    php_bind: '127.0.0.1:9000'
+    nginx_bind: '127.0.0.1:8000'
+    behavior: 'standard'
+    
 _vars =
     prefix_dir: 'nginx-'
-    php_bind: '127.0.0.1:9000'
-    nginx_bind: '127.0.01:8000'
-    kill: 0
+    php_bind: defaults.php_bind
+    nginx_bind: defaults.nginx_bind
     fresh: true
-    behavior: 'standard'
+    behavior: defaults.behavior
     behavior_file: ''
+    meta: JSON.parse (fs.readFileSync path.join(__dirname, '..', 'package.json'), 'UTF-8')
 
 _processes = {}
+_proc_stoping = false
+_killed = []
 _stop_callback = false
+_initiated = false
 
 bind = (php_bind, nginx_bind) ->
     _vars.php_bind = php_bind
@@ -33,41 +42,69 @@ behavior = (profile) ->
     if not found
         stdio.error 'Invalid behavior selected: ' + profile
         return false
-    stdio.logme 'behavior: ' + stdio.emphasize(profile)
     _vars.behavior = profile
     _vars.behavior_file = require '../templates/behaviors/' + profile + '.conf'
     true 
+    
+extraDirectives = (directivesFile) ->
+    exists = path.existsSync(directivesFile);
+    if not exists
+        stdio.error 'Passed extra directives file do not exists: ' + directivesFile
+        return false
+        
+    _vars.extraDirectives = fs.readFileSync directivesFile, 'UTF-8'
+    return true
 
-killed = ->
-    _vars.kill += 1
-    if _vars.kill >= 3
-        exec 'rm -r ' + _vars.tmpdir, ->
-            if _stop_callback
-                res =
-                    vars : _vars
-                    processes : _processes
-                _stop_callback null, res
-                return
-            else
-                process.exit()
+phpExited = (code, signal) ->
+    killed 'php', code, signal
+    
+nginxExited = (code, signal) ->
+    killed 'nginx', code, signal
+    
+tailExited = (code, signal) ->
+    killed 'tail', code, signal
 
+errExited = (code, signal) ->
+    killed 'err', code, signal
+      
+killed = (processName, code, signal) ->
+    if not _proc_stoping and (code is not 0 or signal is not null)
+        if code is not 0
+            stdio.error 'Process "' + processName + '" has exited with errorcode: ' + code
+        else
+            stdio.error 'Process "' + processName + '" has has been killed: ' + signal
+        stdio.error 'Shutting down node-sng...'
+        stop()
+        
+    _killed.push processName unless processName of _killed
+    
+    if _killed.length is 4
+    
+      exec 'rm -r ' + _vars.tmpdir, ->
+          if _stop_callback
+              res =
+                  vars : _vars
+                  processes : _processes
+              _stop_callback null, res
+              return
+          else
+              std.delay 1000, ->
+                  process.exit()
+                  
+                
 start = (callback)  ->
 
     callback ?= false
-
+    
     (err, stdout, stderr) <- exec 'mktemp -d /tmp/' + _vars.prefix_dir + 'XXXXXXX'
 
     if (err !== null) 
-        console.log 'exec error:' + err
+        stdio.error 'exec error:' + err
         process.exit() 
 
     _vars.tmpdir = stdout.substr 0, stdout.length - 1
     _vars.access_log = _vars.tmpdir + '/access.log'
     _vars.error_log = _vars.tmpdir + '/error.log'
-
-    if not callback
-        stdio.logme 'NGinx temporary directory is ' + stdio.emphasize(_vars.tmpdir) 
-
     _vars.behavior_file = _vars.behavior_file.render _vars
     _vars.nginx_conf = nginx_conf.render _vars
 
@@ -75,12 +112,16 @@ start = (callback)  ->
     fs.writeFileSync _vars.conffilename, _vars.nginx_conf
     fs.writeFileSync _vars.access_log, ''
     fs.writeFileSync _vars.error_log, ''
-
+    
     if not callback
+        stdio.logme 'Behavior: ' + stdio.emphasize(_vars.behavior)
+        stdio.logme 'NGinx temporary directory is ' + stdio.emphasize(_vars.tmpdir)
+    
+    if not callback  
         stdio.logme 'Starting PHP CGI on ' + stdio.emphasize(_vars.php_bind)
 
     _processes.php = spawn 'php-cgi', ['-b',_vars.php_bind,'-q']
-    _processes.php.on 'exit', killed
+    _processes.php.on 'exit', phpExited
     if not callback
         _processes.php.stdout.on 'data', stdio.print_stdout
         _processes.php.stderr.on 'data', stdio.print_stderr
@@ -89,18 +130,18 @@ start = (callback)  ->
         stdio.logme "Starting NGinx CGI on " + stdio.emphasize _vars.nginx_bind
 
     _processes.nginx = spawn 'nginx', ['-c',_vars.conffilename]
-    _processes.nginx.on 'exit', killed
+    _processes.nginx.on 'exit', nginxExited
     if not callback
         _processes.nginx.stdout.on 'data', stdio.print_stdout
         _processes.nginx.stderr.on 'data', stdio.print_stderr
 
     _processes.tail = spawn 'tail', ['-f',_vars.access_log]
-    _processes.tail.on 'exit', killed
+    _processes.tail.on 'exit', tailExited
     if not callback
         _processes.tail.stdout.on 'data', stdio.print_accesslog
 
     _processes.err = spawn 'tail', ['-f', _vars.error_log]
-    _processes.err.on 'exit', killed
+    _processes.err.on 'exit', errExited
     if not callback
         _processes.err.stdout.on 'data', stdio.print_stderr
 
@@ -113,21 +154,26 @@ start = (callback)  ->
                 processes: _processes
             callback null, res
         return
+        
+    setTimeout
 
 
 stop = (callback) ->
     callback ?= false
     _stop_callback :=callback
-    _processes.tail.kill 'SIGINT' unless _processes.tail is undefined
-    _processes.nginx.kill 'SIGINT' unless _processes.nginx is undefined
-    _processes.php.kill 'SIGINT' unless _processes.php is undefined
-    _processes.err.kill 'SIGINT' unless _processes.err is undefined
+    _proc_stoping := true
+    _processes.tail.kill 'SIGINT' unless _processes.tail is undefined or _processes.tail.killed
+    _processes.nginx.kill 'SIGINT' unless _processes.nginx is undefined or _processes.nginx.killed
+    _processes.php.kill 'SIGINT' unless _processes.php is undefined or _processes.php.killed
+    _processes.err.kill 'SIGINT' unless _processes.err is undefined or _processes.err.killed
 
 base = (base) ->
     _vars.base = base
 
+exports.defaults = defaults
 exports.base = base
 exports.bind = bind
 exports.start = start
 exports.stop = stop
 exports.behavior = behavior
+exports.extraDirectives = extraDirectives

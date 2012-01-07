@@ -8,18 +8,20 @@ sng = require '../lib/sng'
 argv = optimist
     .usage 'sng [basedir]'
     .default do
-        n: '127.0.0.1:8000', 
-        p: '127.0.0.1:9000',
-        b: 'standard'
+        n: sng.defaults.nginx_bind,
+        p: sng.defaults.php_bind, 
+        b: sng.defaults.behavior
     .alias do
         n: 'nginx-base', 
         p: 'php-bind',
         b: 'behavior',
+        x: 'extra-directives',
         h: 'help',
     .describe do
         n: 'Default binding NGinx wil be listening on',
         p: 'Default binding address for php-cgi',
-        b: 'Changes behavior. Avialable are: "standard", "zend"'
+        b: 'Changes behavior. Avialable are: "standard", "zend"',
+        x: 'Extra directives file for the NGinx server'
     .argv
 
 
@@ -33,16 +35,22 @@ if optimist.argv._.length > 0
 else
     sng.base process.cwd()
 
-behavior_set = sng.behavior argv.b
-if not behavior_set
+if not sng.behavior argv.b
     optimist.showHelp()
     process.exit()
     return
+    
+if optimist.argv.x is not undefined and not sng.extraDirectives optimist.argv.x
+    process.exit()
+    
 sng.bind argv.p, argv.n
 sng.start()
 
 process.stdin.resume()
 
 process.on 'SIGINT', ->
-    console.log 'Interrupted'
+    console.log "\nInterrupted"
+    sng.stop()
+process.on 'SIGTERM', ->
+    console.log "\nTerminated"
     sng.stop()

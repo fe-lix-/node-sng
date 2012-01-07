@@ -1,0 +1,24 @@
+
+delay = (ms, callback) ->
+    setTimeout callback, ms
+
+cycle = (ms, callback) ->
+    setInterval callback, ms
+    
+lpad = (str, length, padString) ->
+    padString ?= ' '
+    while str.length < length
+        str = padString + str
+    return str
+ 
+rpad = (str, length, padString) ->
+    padString ?= ' '
+    while str.length < length
+        str = str + padString
+    return str
+   
+exports.delay = delay
+exports.cycle = cycle
+exports.lpad = lpad
+exports.rpad = rpad
+
