@@ -89,6 +89,7 @@ killed = (processName, code, signal) ->
               return
           else
               std.delay 1000, ->
+                  stdio.logme 'Server has been closed properly' false
                   process.exit()
                   
                 
@@ -114,6 +115,7 @@ start = (callback)  ->
     fs.writeFileSync _vars.error_log, ''
     
     if not callback
+        stdio.logme 'Document root: ' + stdio.emphasize(_vars.base)    
         stdio.logme 'Behavior: ' + stdio.emphasize(_vars.behavior)
         stdio.logme 'NGinx temporary directory is ' + stdio.emphasize(_vars.tmpdir)
     

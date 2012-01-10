@@ -31,7 +31,12 @@ if optimist.argv.h
     return
 
 if optimist.argv._.length > 0   
-    base = optimist.argv._[0]
+    for param of optimist.argv._
+        if typeof param is 'string'
+            base = param
+            break
+    if typeof base is not 'string'
+        sng.base process.cwd()
     if base[0] != '/'    
         base = path.join process.cwd(), base
     sng.base base
