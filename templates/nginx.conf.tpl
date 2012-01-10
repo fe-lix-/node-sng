@@ -45,12 +45,6 @@ http {
         root        {{ base }};
 
         {{ behavior_file|indent(8) }}
-        
-        {% if extraDirectives %}
-        
-        {{ extraDirectives|indent(8) }}
-        
-        {% endif %}
     
     }
 

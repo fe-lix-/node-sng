@@ -1,5 +1,11 @@
 location / {
 
+	{% if extraDirectives %}
+        
+    {{ extraDirectives|indent(12) }}
+        
+    {% endif %}
+    
     if ($uri ~ "\.php") {
         fastcgi_pass {{ php_bind }};
     }

@@ -30,8 +30,11 @@ if optimist.argv.h
     process.exit()
     return
 
-if optimist.argv._.length > 0
-    sng.base path.join process.cwd(), optimist.argv._[0]
+if optimist.argv._.length > 0   
+    base = optimist.argv._[0]
+    if base[0] != '/'    
+        base = path.join process.cwd(), base
+    sng.base base
 else
     sng.base process.cwd()
 

@@ -25,4 +25,10 @@ location ~ \.php$ {
     fastcgi_index  index.php;
     fastcgi_param SCRIPT_FILENAME {{ base }}$fastcgi_script_name;
     fastcgi_param SERVER_SOFTWARE {{ meta.name }}/{{ meta.version }};
+    
+    {% if extraDirectives %}
+        
+    {{ extraDirectives|indent(12) }}
+        
+    {% endif %}
 }
