@@ -1,6 +1,6 @@
 {
     "name": "sng",
-    "version": "0.0.10",
+    "version": "0.1.0",
     "description": "THE script that manages NGinx/PHP developement server",
     "keywords": ["nginx", "php", "developement server", "fun"],
     "homepage" : "http://code.ravelsoft.com/node-sng",
