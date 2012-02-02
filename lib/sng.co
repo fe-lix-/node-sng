@@ -42,9 +42,13 @@ behavior = (profile) ->
     if not found
         stdio.error 'Invalid behavior selected: ' + profile
         return false
+    load_behavior(profile, '../templates/behaviors/' + profile + '.conf')
+    return true
+
+load_behavior = (profile, path) ->
     _vars.behavior = profile
-    _vars.behavior_file = require '../templates/behaviors/' + profile + '.conf'
-    true 
+    _vars.behavior_file = require path
+
     
 extraDirectives = (directivesFile) ->
     exists = path.existsSync(directivesFile);
@@ -178,4 +182,5 @@ exports.bind = bind
 exports.start = start
 exports.stop = stop
 exports.behavior = behavior
+exports.load_behavior = load_behavior
 exports.extraDirectives = extraDirectives

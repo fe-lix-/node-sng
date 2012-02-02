@@ -33,22 +33,32 @@ if optimist.argv.h
 if optimist.argv._.length > 0   
     for param of optimist.argv._
         if typeof param is 'string'
-            base = param
+            sng.base_path = param
             break
-    if typeof base is not 'string'
-        sng.base process.cwd()
-    if base[0] != '/'    
-        base = path.join process.cwd(), base
-    sng.base base
+    if typeof sng.base_path is not 'string'
+        sng.base_path = process.cwd!
+    if sng.base_path[0] != '/'    
+        sng.base_path = path.join process.cwd!, base
 else
-    sng.base process.cwd()
+    sng.base_path = process.cwd!
 
-if not sng.behavior argv.b
-    optimist.showHelp()
-    process.exit()
-    return
+sng.base sng.base_path
+
+
+sng_conf_file = path.join sng.base_path, '.sng.conf'
+
+
+if path.existsSync sng_conf_file + '.tpl'
+    console.log 'meuh'
+    sng.load_behavior 'sng conf file', sng_conf_file
+else
+    if not sng.behavior argv.b
+        optimist.showHelp()
+        process.exit()
+        return
+
     
-if optimist.argv.x is not undefined and not sng.extraDirectives optimist.argv.x
+if argv.x is not undefined and not sng.extraDirectives argv.x
     process.exit()
     
 sng.bind argv.p, argv.n
