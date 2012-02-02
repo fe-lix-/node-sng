@@ -38,7 +38,7 @@ if optimist.argv._.length > 0
     if typeof sng.base_path is not 'string'
         sng.base_path = process.cwd!
     if sng.base_path[0] != '/'    
-        sng.base_path = path.join process.cwd!, base
+        sng.base_path = path.join process.cwd!, sng.base_path
 else
     sng.base_path = process.cwd!
 
