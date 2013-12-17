@@ -1,31 +1,30 @@
 {
     "name": "sng",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "THE script that manages NGinx/PHP developement server",
     "keywords": ["nginx", "php", "developement server", "fun"],
-    "homepage" : "http://code.ravelsoft.com/node-sng",
+    "homepage" : "https://github.com/fe-lix-/node-sng",
     "directories": {
         "templates": "templates"
     },
     "repository": {
-        "type": "hg",
-        "url": "https://bitbucket.org/ravelsoft/node-sng"
+        "type": "git",
+        "url": "https://github.com/fe-lix-/node-sng"
     },
     "bin": {
         "sng": "bin/cli.js"
     },
     "dependencies": {
-        "optimist": "latest",
-        "jinjs": "latest"
+        "optimist": "0.6.x",
+        "swig": "1.2.x"
     },
     "devDependencies" : {
-        "coco": "latest",
         "vows": "latest"
     },
     "author" : {
         "name" : "Félix Delval",
-        "email" : "contact@ravelsoft.com",
-        "url" : "http://www.ravelsoft.com"
+        "email" : "felix.delval@gmail.com",
+        "url" : "http://blog.delval.eu"
     },
     "licence" : "MIT/X11"
 }

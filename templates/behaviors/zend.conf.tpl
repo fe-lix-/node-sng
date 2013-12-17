@@ -1,7 +1,7 @@
 
 {% if extraDirectives %}
     
-{{ extraDirectives|indent(12) }}
+{{ extraDirectives }}
     
 {% endif %}
 
