@@ -1,3 +1,8 @@
+0.2.1 : 19 decembre 2013
+- Adding fastcgi parameters to the nginx.conf
+0.2.0 : 18 december 2013
+- Migrating away from coco
+- Using swig as template language
 0.1.0 : 02 february 2012
 - Adding the sng configuration file
 0.0.10 : 10 january 2012

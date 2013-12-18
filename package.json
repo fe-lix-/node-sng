@@ -1,6 +1,6 @@
 {
     "name": "sng",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "THE script that manages NGinx/PHP developement server",
     "keywords": ["nginx", "php", "developement server", "fun"],
     "homepage" : "https://github.com/fe-lix-/node-sng",
@@ -26,5 +26,8 @@
         "email" : "felix.delval@gmail.com",
         "url" : "http://blog.delval.eu"
     },
-    "licence" : "MIT/X11"
+    "licence" : "MIT/X11",
+    "engines": {
+        "node": ">=0.8"
+    }
 }
